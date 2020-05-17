@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "gino-fastapi-demo"
+version = "0.1.0"
+description = ""
+authors = ["pengyj"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+gino-starlette = {path = "gino_starlette-0.1.1-py3-none-any.whl"}
+fastapi = "^0.54.1"
+uvicorn = "^0.11.5"
+gunicorn = "^20.0.4"
+alembic = "^1.4.2"
+psycopg2-binary = "^2.8.5"
+more-itertools = "8.2.0"
+aioredis = "^1.3.1"
+redis = "^3.5.2"
+
+[tool.poetry.plugins."gino_fastapi_demo.modules"]
+"users" = "gino_fastapi_demo.views.users"
+"cache" = "gino_fastapi_demo.cache.redis"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.4.2"
+requests = "^2.23.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

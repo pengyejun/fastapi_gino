@@ -1,0 +1,3 @@
+[gino_fastapi_demo.modules]
+users = gino_fastapi_demo.views.users
+
