@@ -4,7 +4,7 @@ from datetime import date
 from fastapi import APIRouter
 from pydantic import BaseModel
 from ..models.users import User
-from ..cache.redis import redis_pool
+from ..cache.cache import Cache
 
 router = APIRouter()
 
@@ -35,8 +35,7 @@ async def delete_user(uid: int):
 
 @router.get("/hello")
 async def hello():
-    ret = await redis_pool.incr("path")
-    logging.debug(ret)
+    await Cache.incr("path")
     return {}
 
 
