@@ -1,57 +1,57 @@
-import sys
-import abc
 import logging
-from aioredis import Redis
+import aioredis
+
+from fastapi import FastAPI
+
+from .utils import CacheBase, make_address
+from .redis import RedisCache
 from .. import config
 
-
-def make_address() -> str:
-    if config.ENABLE_REDIS:
-        return f"redis://{config.REDIS_HOST}:{config.REDIS_PORT}"
-    logging.error("invalid cache")
-    sys.exit(-1)
+logger = logging.getLogger(__name__)
 
 
-class CacheBase(abc.ABC):
-    cache = None
-
-    @classmethod
-    @abc.abstractmethod
-    async def incr(cls, key, value=1):
-        pass
-
-    @classmethod
-    @abc.abstractmethod
-    async def set(cls, key, value):
-        pass
-
-    @classmethod
-    @abc.abstractmethod
-    async def get(cls, key):
-        pass
-
-
-class RedisCache(CacheBase):
-    cache: Redis = None
+class Cache:
+    cache_cls: CacheBase = None
 
     @classmethod
     async def incr(cls, key, value=1):
-        await cls.incrby(key, value)
+        await cls.cache_cls.incrby(key, value)
 
     @classmethod
     async def incrby(cls, key, value):
-        await cls.cache.incrby(key, value)
+        await cls.cache_cls.incrby(key, value)
 
     @classmethod
     async def set(cls, key, value):
-        await cls.cache.set(key, value)
+        await cls.cache_cls.set(key, value)
 
     @classmethod
     async def get(cls, key, encoding="utf-8"):
-        return await cls.cache.get(key, encoding=encoding)
+        return await cls.cache_cls.get(key, encoding=encoding)
 
+    @classmethod
+    def exists_cache(cls):
+        return cls.cache_cls.cache is not None
 
-Cache: CacheBase = None
+    @classmethod
+    def register(cls, cache):
+        cls.cache_cls.cache = cache
+
 
 if config.ENABLE_REDIS:
-    Cache = RedisCache
+    Cache.cache_cls = RedisCache
+
+
+def init_app(app: FastAPI):
+    address = make_address()
+
+    @app.on_event("startup")
+    async def register_redis():
+        logger.info("======  init redis =====")
+        if not Cache.exists_cache():
+            redis_pool = await aioredis.create_redis_pool(
+                address,
+                password=config.REDIS_PASSWORD,
+                maxsize=config.REDIS_MAXSIZE,
+                minsize=config.REDIS_MINSIZE)
+            Cache.register(redis_pool)

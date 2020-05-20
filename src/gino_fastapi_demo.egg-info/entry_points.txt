@@ -1,4 +1,4 @@
 [gino_fastapi_demo.modules]
-cache = gino_fastapi_demo.cache.redis
+cache = gino_fastapi_demo.cache.cache
 users = gino_fastapi_demo.views.users
 

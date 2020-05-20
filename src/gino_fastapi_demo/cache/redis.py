@@ -1,22 +1,25 @@
 import logging
-import aioredis
-from fastapi import FastAPI
-from .. import config
-from .cache import make_address, Cache
+from aioredis import Redis
+from .utils import CacheBase
 
 logger = logging.getLogger(__name__)
 
 
-def init_app(app: FastAPI):
-    address = make_address()
+class RedisCache(CacheBase):
+    cache: Redis = None
 
-    @app.on_event("startup")
-    async def register_redis():
-        logger.info("======  init redis =====")
-        if Cache.cache is None:
-            redis_pool = await aioredis.create_redis_pool(
-                address,
-                password=config.REDIS_PASSWORD,
-                maxsize=config.REDIS_MAXSIZE,
-                minsize=config.REDIS_MINSIZE)
-            Cache.cache = redis_pool
+    @classmethod
+    async def incr(cls, key, value=1):
+        await cls.incrby(key, value)
+
+    @classmethod
+    async def incrby(cls, key, value):
+        await cls.cache.incrby(key, value)
+
+    @classmethod
+    async def set(cls, key, value):
+        await cls.cache.set(key, value)
+
+    @classmethod
+    async def get(cls, key, encoding="utf-8"):
+        return await cls.cache.get(key, encoding=encoding)

@@ -15,6 +15,7 @@ src/gino_fastapi_demo/cache/__init__.py
 src/gino_fastapi_demo/cache/cache.py
 src/gino_fastapi_demo/cache/memcache.py
 src/gino_fastapi_demo/cache/redis.py
+src/gino_fastapi_demo/cache/utils.py
 src/gino_fastapi_demo/models/__init__.py
 src/gino_fastapi_demo/models/users.py
 src/gino_fastapi_demo/views/__init__.py
